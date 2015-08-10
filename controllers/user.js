@@ -21,7 +21,7 @@ module.exports = function(app){
        res.send(_.where( DB.posts,{ownerId:req.params.id}));
     })
     app.post('/register', function (req, res) {
-        //проверить свободен ли ник и имейл
+        //РїСЂРѕРІРµСЂРёС‚СЊ СЃРІРѕР±РѕРґРµРЅ Р»Рё РЅРёРє Рё РёРјРµР№Р»
         if (!req.body.email) {
             res.status(400).send({message: "Email is required"})
             return;
