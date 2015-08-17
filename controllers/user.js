@@ -1,25 +1,58 @@
-var uniqueId = Date.now();
-module.exports = function(app){
-    app.get('/me',function(req,res){
+var ObjectId = require('mongodb').ObjectID
+var async = require('async')
+module.exports = function (app) {
+    app.get('/me', function (req, res) {
         res.send(req.currentUser);
     })
     app.get('/user', function (req, res) {
-        res.send(DB.users);
+        DB.collection('users').find({}).toArray(function (err, data) {
+
+            res.send(data.map(function (user) {
+                delete user.pwd;
+                return user
+            }));
+
+        })
+
+
     })
-    app.get('/user/:id',function(req,res){
-        var user = _.clone(_.find(DB.users,function(usr){
-            return usr.id ==req.params.id;
-        }));
-        delete user.pwd;
-        if(!user){
-            res.status(404).send({message:"not found"})
-            return;
-        }
-        res.send(user)
+    app.get('/user/:id', function (req, res) {
+        DB.collection('users').findOne({_id: new ObjectId(req.params.id)},
+            function (err, user) {
+                if (!user) {
+                    res.status(404).send({message: "not found"})
+                    return;
+                }
+                delete user.pwd;
+                res.send(user);
+            })
     })
-    app.get('/user/:id/wall',function(req,res){
-       res.send(_.where( DB.posts,{ownerId:req.params.id}));
+    app.get('/user/:id/wall', function (req, res) {
+        var UsersCollection = DB.collection('users')
+        DB.collection('posts')
+            .find({"ownerId._id": req.params.id})
+            .toArray(function (err, posts) {
+                async.mapLimit(posts, 5, function (post, next) {
+                    UsersCollection.findOne({_id: new ObjectId(post.authorId._id)},
+                        function (err, data) {
+                            post.author = data;
+                            UsersCollection.findOne({_id: new ObjectId(post.ownerId._id)},
+                                function (err, data) {
+                                    post.owner = data;
+                                    next(null,post);
+                                })
+                        })
+                }, function (err,data) {
+                    res.send(data);
+                })
+
+
+            })
+
+
     })
+
+
     app.post('/register', function (req, res) {
         //проверить свободен ли ник и имейл
         if (!req.body.email) {
@@ -35,13 +68,13 @@ module.exports = function(app){
         var user = {
             email: req.body.email,
             nick: req.body.nick,
-            pwd: req.body.pwd,
-            id: ++uniqueId
+            pwd: req.body.pwd
         };
 
-        DB.users.push(_.clone(user))
-        DB.save();
-        delete user.pwd;
-        res.send(user)
+        DB.collection('users').insert(user, function (err, data) {
+            delete user.pwd;
+            res.send(user)
+        })
+
     })
 }

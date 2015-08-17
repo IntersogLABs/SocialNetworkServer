@@ -3,17 +3,13 @@ var bodyParser = require('body-parser');
 GLOBAL._ = require('underscore');
 var fs= require('fs')
 var app = express();
-GLOBAL.DB = {
-    save:function(){
-        fs.writeFileSync('./db.json',JSON.stringify(this))
-    },
-    restore: function(){
-        GLOBAL.DB = _.extend(GLOBAL.DB,JSON.parse(fs.readFileSync('./db.json','utf-8')))
-    }
-}
-GLOBAL.DB.restore();
-DB.users = DB.users || [];
-DB.posts = DB.posts || [];
+var MongoClient = require('mongodb').MongoClient
+var url = 'mongodb://localhost:27017/socialNetwork';
+MongoClient.connect(url, function(err, db) {
+    console.log("Connected correctly to server");
+    GLOBAL.DB  =  db;
+    app.listen(100)
+});
 
 
 app.use(bodyParser.json())
@@ -30,18 +26,20 @@ app.use(function (req, res, next) {
     var parts = req.headers['authorization'].split(":")
     var nick = parts[0];
     var pwd = parts[1];
-    var user = _.find(DB.users, function (usr) {
-        return usr.nick == nick && pwd == usr.pwd;
-    })
-    if (!user) {
+    DB.collection('users').find({nick:nick,pwd:pwd}).toArray(function(err,data){
+
+        if (data.length>0) {
+            req.currentUser =data[0];
+            next(null);
+            return;
+        }
         res.status(401).send({message: "invalid user or password"})
-        return;
-    }
-    req.currentUser =user;
-    next(null);
+
+    })
+
+
 })
 require('./controllers/user')(app)
 require('./controllers/post')(app)
 
 
-app.listen(100)
