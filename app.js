@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 GLOBAL._ = require('underscore');
+GLOBAL.sha1 = require('sha1');
 var fs= require('fs')
 var app = express();
 GLOBAL.DB = {
@@ -14,11 +15,11 @@ GLOBAL.DB = {
 GLOBAL.DB.restore();
 DB.users = DB.users || [];
 DB.posts = DB.posts || [];
-
+console.log("run");
 
 app.use(bodyParser.json())
 app.use(function (req, res, next) {
-    console.log(req.originalUrl)
+    console.log(req.originalUrl);
     if(req.originalUrl =='/register'){
         next(null);
         return;
@@ -31,13 +32,14 @@ app.use(function (req, res, next) {
     var nick = parts[0];
     var pwd = parts[1];
     var user = _.find(DB.users, function (usr) {
-        return usr.nick == nick && pwd == usr.pwd;
+        return usr.nick == nick && sha1(pwd) == usr.pwd;
     })
     if (!user) {
         res.status(401).send({message: "invalid user or password"})
         return;
     }
-    req.currentUser =user;
+    req.currentUser = user;
+    
     next(null);
 })
 require('./controllers/user')(app)
