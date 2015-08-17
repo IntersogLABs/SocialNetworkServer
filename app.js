@@ -47,6 +47,3 @@ app.use(function (req, res, next) {
 })
 require('./controllers/user')(app)
 require('./controllers/post')(app)
-
-
-app.listen(100)
