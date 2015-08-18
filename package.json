@@ -1,9 +1,32 @@
 {
-  "name": "application-name",
+  "name": "app.js",
   "version": "0.0.1",
   "dependencies": {
     "body-parser": "^1.13.3",
     "express": "^4.13.3",
+    "fs": "0.0.2",
+    "mongodb": "^2.0.41",
     "underscore": "^1.8.3"
-  }
+  },
+  "description": "Отрефакторить /registration запрос:",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/potravniy/SocialNetworkServer.git"
+  },
+  "keywords": [
+    "Social",
+    "Network",
+    "Learning",
+    "Project"
+  ],
+  "author": "Gena Moroz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/potravniy/SocialNetworkServer/issues"
+  },
+  "homepage": "https://github.com/potravniy/SocialNetworkServer#readme"
 }
