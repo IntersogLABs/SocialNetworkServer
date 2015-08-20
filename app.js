@@ -1,7 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 GLOBAL._ = require('underscore');
-var fs= require('fs')
 var app = express();
 var MongoClient = require('mongodb').MongoClient
 var url = 'mongodb://localhost:27017/socialNetwork';
