@@ -8,15 +8,21 @@ var url = 'mongodb://localhost:27017/socialNetwork';
 MongoClient.connect(url, function(err, db) {
     console.log("Connected correctly to server");
     GLOBAL.DB  =  db;
-    app.listen(100)
+    app.listen(80)
 });
 
 app.use(function(req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
 
-  next();
+    // intercept OPTIONS method
+    if ('OPTIONS' == req.method) {
+      res.send(200);
+    }
+    else {
+      next();
+    }
 });
 app.use(bodyParser.json())
 app.use(function (req, res, next) {
