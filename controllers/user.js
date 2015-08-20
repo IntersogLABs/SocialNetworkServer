@@ -54,7 +54,6 @@ module.exports = function (app) {
 
 
     app.post('/register', function (req, res) {
-        //проверить свободен ли ник и имейл
         if (!req.body.email) {
             res.status(400).send({message: "Email is required"})
             return;
@@ -64,7 +63,11 @@ module.exports = function (app) {
         } else if (!req.body.pwd || !req.body.repeatPwd || req.body.pwd != req.body.repeatPwd) {
             res.status(400).send({message: "Passwords do not match"})
             return;
-        }
+        } else if (DB.collection('users').find({"email": req.body.email}).hasNext()) {
+	    res.status(400).send({message: "Email is already registered"})
+        } else if (DB.collection('users').find({"nick": req.body.nick}).hasNext()) {
+	    res.status(400).send({message: "Nick is already registered"})
+	}
         var user = {
             email: req.body.email,
             nick: req.body.nick,
