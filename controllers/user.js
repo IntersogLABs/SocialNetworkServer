@@ -1,5 +1,6 @@
 var ObjectId = require('mongodb').ObjectID
 var async = require('async')
+var auth = require('../auth')
 module.exports = function (app) {
     app.get('/me', function (req, res) {
         res.send(req.currentUser);
@@ -63,21 +64,33 @@ module.exports = function (app) {
         } else if (!req.body.pwd || !req.body.repeatPwd || req.body.pwd != req.body.repeatPwd) {
             res.status(400).send({message: "Passwords do not match"})
             return;
-        } else if (DB.collection('users').find({"email": req.body.email}).hasNext()) {
-	    res.status(400).send({message: "Email is already registered"})
-        } else if (DB.collection('users').find({"nick": req.body.nick}).hasNext()) {
-	    res.status(400).send({message: "Nick is already registered"})
-	}
-        var user = {
-            email: req.body.email,
-            nick: req.body.nick,
-            pwd: req.body.pwd
-        };
+        }
 
-        DB.collection('users').insert(user, function (err, data) {
-            delete user.pwd;
-            res.send(user)
-        })
+        DB.collection('users')
+            .find({"email": req.body.email})
+            .hasNext(function(err, data){
+                if (!data) {
+                    DB.collection('users')
+                        .find({"nick": req.body.nick})
+                        .hasNext(function(err, data){
+                            if (!data) {
+                                var user = {
+                                    email: req.body.email,
+                                    nick: req.body.nick,
+                                    pwd: auth.encodePassword(req.body.pwd)
+                                };
 
+                                DB.collection('users').insert(user, function (err, data) {
+                                    delete user.pwd;
+                                    res.send(user)
+                                })
+                            } else {
+	                        res.status(400).send({message: "Nick is already registered"})
+                            }
+                        })
+                } else {
+	                res.status(400).send({message: "Email is already registered"})
+                }
+            })
     })
 }
