@@ -10,6 +10,8 @@ MongoClient.connect(url, function(err, db) {
     app.listen(100)
 });
 
+var auth = require('./auth')
+
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
@@ -30,7 +32,7 @@ app.use(function (req, res, next) {
     }
     var parts = req.headers['authorization'].split(":")
     var nick = parts[0];
-    var pwd = parts[1];
+    var pwd = auth.encodePassword(parts[1]);
     DB.collection('users').find({nick:nick,pwd:pwd}).toArray(function(err,data){
 
         if (data.length>0) {
