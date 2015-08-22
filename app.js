@@ -5,7 +5,7 @@ var app = express();
 var MongoClient = require('mongodb').MongoClient
 var url = 'mongodb://localhost:27017/socialNetwork';
 MongoClient.connect(url, function(err, db) {
-    console.log("Connected correctly to server");
+    console.log(err ? err : "Connected correctly to server");
     GLOBAL.DB  =  db;
     app.listen(100)
 });
