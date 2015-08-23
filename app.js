@@ -48,3 +48,4 @@ app.use(function (req, res, next) {
 })
 require('./controllers/user')(app)
 require('./controllers/post')(app)
+require('./controllers/following')(app)
