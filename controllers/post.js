@@ -6,15 +6,22 @@ module.exports=function(app){
             res.status(400).send({message:'content required'})
             return;
         }
-        var post = {
-            content:req.body.content,
-            authorId:{$ref:"users",_id:req.currentUser._id},
-            ownerId:{$ref:"users",_id:new ObjectId(req.params.id)}
-        };
-        DB.collection('posts').insert(post,function(err,data){
-            res.send(data);
-        })
 
+        DB.collection('users').findOne({_id: new ObjectId(req.params.id)},
+            function (err, user) {
+                if (!user) {
+                    res.status(404).send({message: "not found"})
+                    return;
+                }
+                var post = {
+                    content:req.body.content,
+                    authorId:{$ref:"users",_id:req.currentUser._id},
+                    ownerId:{$ref:"users",_id:new ObjectId(req.params.id)}
+                };
+                DB.collection('posts').insert(post,function(err,data){
+                    res.send(data);
+                })
+            })
 
     })
 
