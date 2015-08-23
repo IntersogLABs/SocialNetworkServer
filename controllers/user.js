@@ -55,6 +55,7 @@ module.exports = function (app) {
 
 
     app.post('/register', function (req, res) {
+        var UsersCollection = DB.collection('users')
         if (!req.body.email) {
             res.status(400).send({message: "Email is required"})
             return;
@@ -66,11 +67,11 @@ module.exports = function (app) {
             return;
         }
 
-        DB.collection('users')
+        UsersCollection
             .find({"email": req.body.email})
             .hasNext(function(err, data){
                 if (!data) {
-                    DB.collection('users')
+                    UsersCollection
                         .find({"nick": req.body.nick})
                         .hasNext(function(err, data){
                             if (!data) {
@@ -80,7 +81,7 @@ module.exports = function (app) {
                                     pwd: auth.encodePassword(req.body.pwd)
                                 };
 
-                                DB.collection('users').insert(user, function (err, data) {
+                                UsersCollection.insert(user, function (err, data) {
                                     delete user.pwd;
                                     res.send(user)
                                 })
@@ -92,5 +93,58 @@ module.exports = function (app) {
 	                res.status(400).send({message: "Email is already registered"})
                 }
             })
+    })
+
+    app.put('/me', function (req, res) {
+        var UsersCollection = DB.collection('users')
+        var userInfo = {}
+        if (req.body.email) {userInfo.email = req.body.email}
+        if (req.body.nick) {userInfo.nick = req.body.nick}
+        if (req.body.pwd) {userInfo.pwd = auth.encodePassword(req.body.pwd)}
+
+        var checkEmail = function() {
+            UsersCollection
+                .find({"email": req.body.email})
+                .hasNext(function(err, data){
+                    if (!data) {
+                        if (userInfo.nick) {
+                            checkNick()
+                        } else {
+                            updateUser()
+                        }
+                    } else {
+	                    res.status(400).send({message: "Email is already registered"})
+                    }
+                })
+        }
+
+        var checkNick = function() {
+            UsersCollection
+                .find({"nick": req.body.nick})
+                .hasNext(function(err, data){
+                    if (!data) {
+                        updateUser()
+                    } else {
+	                    res.status(400).send({message: "Nick is already registered"})
+                    }
+                })
+        }
+
+        var updateUser = function() {
+		    UsersCollection.updateOne({_id: req.currentUser._id},
+	            {$set: userInfo},
+	            function(err, result) {
+		            res.send(result)
+	            })
+        }
+
+        if (userInfo.email) {
+            checkEmail()
+        } else if (userInfo.nick) {
+            checkNick()
+        } else {
+            updateUser()
+        }
+
     })
 }
