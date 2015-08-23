@@ -31,7 +31,7 @@ module.exports = function (app) {
     app.get('/user/:id/wall', function (req, res) {
         var UsersCollection = DB.collection('users')
         DB.collection('posts')
-            .find({"ownerId._id": req.params.id})
+            .find({"ownerId._id": new ObjectId(req.params.id)})
             .toArray(function (err, posts) {
                 async.mapLimit(posts, 5, function (post, next) {
                     UsersCollection.findOne({_id: new ObjectId(post.authorId._id)},
