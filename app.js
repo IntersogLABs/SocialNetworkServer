@@ -12,7 +12,7 @@ GLOBAL.DB = {
         GLOBAL.DB = _.extend(GLOBAL.DB,JSON.parse(fs.readFileSync('./db.json','utf-8')))
     }
 }
-GLOBAL.DB.restore();
+DB.restore();
 DB.users = DB.users || [];
 DB.posts = DB.posts || [];
 console.log("run");
@@ -31,9 +31,8 @@ app.use(function (req, res, next) {
     var parts = req.headers['authorization'].split(":")
     var nick = parts[0];
     var pwd = parts[1];
-    var user = _.find(DB.users, function (usr) {
-        return usr.nick == nick && sha1(pwd) == usr.pwd;
-    })
+    var user = _.findWhere(DB.users, {"nick":nick, "pwd": sha1(pwd)})
+    
     if (!user) {
         res.status(401).send({message: "invalid user or password"})
         return;

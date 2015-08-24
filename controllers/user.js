@@ -1,7 +1,7 @@
 
 module.exports = function(app){
     app.get('/me',function(req,res){
-        res.send(req.currentUser);
+        res.send(deletePwd(req.currentUser));
     })
 
     app.put('/me',function(req, res){
@@ -12,15 +12,18 @@ module.exports = function(app){
         } else if (req.body.nick && req.body.nick=="") {
             res.status(400).send({message: "Nick is required"})
             return;
-        } else if ((req.body.pwd || req.body.repeatPwd)&&(!req.body.pwd || !req.body.repeatPwd || req.body.pwd != req.body.repeatPwd)){
+        } else if ((req.body.pwd)&&(!req.body.repeatPwd || req.body.pwd != req.body.repeatPwd)){
             res.status(400).send({message: "Passwords do not match"})
             return;
         }
 
-        if (_.findWhere(DB.users,{"email":req.body.email})){
+        var userWithEmail = _.findWhere(DB.users,{"email":req.body.email});
+        var userWithNick = _.findWhere(DB.users,{"nick":req.body.nick});
+
+        if (userWithEmail && userWithEmail.id != user.id){
             res.status(400).send({message: "This Email is not available"})
             return;
-        } else if (_.findWhere(DB.users,{"nick":req.body.nick})){
+        } else if (userWithNick && userWithNick.id != user.id){
             res.status(400).send({message: "This Nick is not available"})
             return;
         }
@@ -35,30 +38,29 @@ module.exports = function(app){
             user.pwd = sha1(req.body.pwd);
         }
         DB.save();
-        res.send(user);
+        res.send(deletePwd(user));
     })
 
     app.get('/user', function(req, res) {
-        res.send(DB.users);
+        res.send(deletePwd(DB.users));
     })
 
     app.get('/user/:id', function(req, res){
         var user = _.clone(_.find(DB.users,function(usr){
             return usr.id == req.params.id;
         }));
-       // console.log(user);
         if(!user){
             res.status(404).send({message:"not found"})
             return;
         }
-        delete user.pwd;
-      
-        res.send(user)
+        res.send(deletePwd(user))
     })
 
     app.get('/user/:id/wall',function(req,res){
        res.send(_.where( DB.posts,{ownerId: req.params.id}));
     })
+
+
 
     app.get('/user/:id/following', function(req, res){
         var user = _.clone(_.find(DB.users,function(usr){
@@ -70,11 +72,11 @@ module.exports = function(app){
             return;
         }
 
-        var following = _.clone(_.filter(DB.users,function(usr){
+        var following = _.filter(DB.users,function(usr){
             return _.include(user.follow, usr.id);
-        }));
+        });
         
-        res.send(following)
+        res.send(deletePwd(following))
     })
 
     app.get('/user/:id/followers', function(req, res){
@@ -83,7 +85,7 @@ module.exports = function(app){
             return user.follow && _.include(user.follow, req.params.id);
         }));
 
-        res.send(followers)
+        res.send(deletePwd(followers))
     })
 
     app.post('/user/:id/follow', function(req, res){
@@ -138,9 +140,23 @@ module.exports = function(app){
             id: String(++uniqueId)
         };
 
-        DB.users.push(_.clone(user))
+        DB.users.push(user)
         DB.save();
-        delete user.pwd;
-        res.send(user)
+        res.send(deletePwd(user))
     })
+
+
+    function deletePwd(users){
+        if (_.isArray(users)){
+            return _.map(users, function(user){
+                var userCopy = _.clone(user)
+                delete userCopy.pwd;
+                return userCopy;
+            })
+        } else {
+            var userCopy = _.clone(users)
+            delete userCopy.pwd;
+            return userCopy;
+        }
+    }
 }
