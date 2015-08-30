@@ -1,20 +1,25 @@
-var express = require('express');
-var bodyParser = require('body-parser');
 GLOBAL._ = require('underscore');
 GLOBAL.sha1 = require('sha1');
-var fs= require('fs')
+GLOBAL.ObjectID = require('mongodb').ObjectID;
+GLOBAL.async = require('async');
+
+var express = require('express');
+var bodyParser = require('body-parser');
+var fs = require('fs')
 var app = express();
-GLOBAL.DB = {
-    save:function(){
-        fs.writeFileSync('./db.json',JSON.stringify(this))
-    },
-    restore: function(){
-        GLOBAL.DB = _.extend(GLOBAL.DB,JSON.parse(fs.readFileSync('./db.json','utf-8')))
-    }
-}
-DB.restore();
-DB.users = DB.users || [];
-DB.posts = DB.posts || [];
+var MongoClient = require('mongodb').MongoClient
+var url = 'mongodb://localhost:27017/socialNetwork'; // в консоли монго смотреть через: use socialNetwork, затем можно db.users.find({}) и т.п.
+MongoClient.connect(url, function(err, db){
+
+    console.log("Connected corretly to server");
+
+    GLOBAL.DB = db; 
+    GLOBAL.UsersCollection = DB.collection('users');
+    GLOBAL.PostsCollection = DB.collection('posts');
+
+    app.listen(100)
+})
+
 console.log("run");
 
 app.use(function(req, res, next) {
@@ -33,7 +38,6 @@ app.use(function(req, res, next) {
 
 app.use(bodyParser.json())
 app.use(function (req, res, next) {
-    console.log(req.originalUrl);
     if(req.originalUrl =='/register'){
         next(null);
         return;
@@ -45,18 +49,30 @@ app.use(function (req, res, next) {
     var parts = req.headers['authorization'].split(":")
     var nick = parts[0];
     var pwd = parts[1];
-    var user = _.findWhere(DB.users, {"nick":nick, "pwd": sha1(pwd)})
-
-    if (!user) {
+    DB.collection('users').findOne({nick:nick,pwd:sha1(pwd)}, function(err,data){
+        if (data) {
+            req.currentUser = data;
+            next(null);
+            return
+        }
         res.status(401).send({message: "invalid user or password"})
-        return;
-    }
-    req.currentUser = user;
-    
-    next(null);
+    })
 })
-require('./controllers/user')(app)
-require('./controllers/post')(app)
 
 
-app.listen(100)
+require('./controllers/user')(app);
+require('./controllers/post')(app);
+
+GLOBAL.deletePwd = function(users){
+    if (_.isArray(users)){
+        return _.map(users, function(user){
+            var userCopy = _.clone(user)
+            delete userCopy.pwd;
+            return userCopy;
+        })
+    } else {
+        var userCopy = _.clone(users)
+        delete userCopy.pwd;
+        return userCopy;
+    }
+}

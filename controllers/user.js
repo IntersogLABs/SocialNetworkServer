@@ -5,7 +5,7 @@ module.exports = function(app){
     })
 
     app.put('/me',function(req, res){
-        var user = _.findWhere(DB.users,{"id":req.currentUser.id});
+        
         if (req.body.email && req.body.email=="") {
             res.status(400).send({message: "Email is required"})
             return;
@@ -17,105 +17,194 @@ module.exports = function(app){
             return;
         }
 
-        var userWithEmail = _.findWhere(DB.users,{"email":req.body.email});
-        var userWithNick = _.findWhere(DB.users,{"nick":req.body.nick});
+        var user = req.currentUser;
+   
+        async.parallel(
+            [
+                function(callback){
+                    UsersCollection.findOne({email: req.body.email}, function(err,data){
+                        callback(err, data)
+                    })
+                },
+                function(callback){
+                    UsersCollection.findOne({nick: req.body.nick}, function(err,data){
+                        callback(err, data)
+                    })
+                }
+            ], 
+            function(err, data){
+                var userWithEmail = data[0];
+                var userWithNick = data[1];
+              
+                
+                if (req.body.email && userWithEmail && userWithEmail._id.toString() != user._id.toString()){
+                    res.status(400).send({message: "This Email is not available"})
+                    return;
+                } else if (req.body.nick && userWithNick && userWithNick._id.toString() != user._id.toString()){
+                    res.status(400).send({message: "This Nick is not available"})
+                    return;
+                } else { 
 
-        if (userWithEmail && userWithEmail.id != user.id){
-            res.status(400).send({message: "This Email is not available"})
-            return;
-        } else if (userWithNick && userWithNick.id != user.id){
-            res.status(400).send({message: "This Nick is not available"})
-            return;
-        }
+                    if (req.body.email){
+                        user.email = req.body.email;
+                    }
+                    if (req.body.nick){
+                        user.nick = req.body.nick;
+                    }
+                    if (req.body.pwd){
+                        user.pwd = sha1(req.body.pwd);
+                    }
 
-        if (req.body.email){
-            user.email = req.body.email;
-        }
-        if (req.body.nick){
-            user.nick = req.body.nick;
-        }
-        if (req.body.pwd){
-            user.pwd = sha1(req.body.pwd);
-        }
-        DB.save();
-        res.send(deletePwd(user));
+                    UsersCollection.update(
+                        {_id: user._id}, 
+                        user, 
+                        function(err, data){
+                            res.send(deletePwd(user)); 
+                        }
+                    )
+                    
+                }
+
+            }
+        )
     })
 
     app.get('/user', function(req, res) {
-        res.send(deletePwd(DB.users));
+        UsersCollection.find({}).toArray(function(err,data){
+            res.send(deletePwd(data));
+        })
     })
 
     app.get('/user/:id', function(req, res){
-        var user = _.clone(_.find(DB.users,function(usr){
-            return usr.id == req.params.id;
-        }));
-        if(!user){
-            res.status(404).send({message:"not found"})
-            return;
-        }
-        res.send(deletePwd(user))
+
+        UsersCollection.findOne({_id: new ObjectID(req.params.id)}, function(err, user){
+            if(!user){
+                res.status(404).send({message:"not found"})
+                return;
+            }
+            res.send(deletePwd(user))
+        })
     })
 
     app.get('/user/:id/wall',function(req,res){
-       res.send(_.where( DB.posts,{ownerId: req.params.id}));
+
+       PostsCollection
+        .find({"ownerId.$id": new ObjectID(req.params.id)})
+        .toArray(function(err, posts){
+            async.mapLimit(
+                posts, 
+                5, 
+                function(post, next){
+                    UsersCollection.findOne({_id: post.authorId.oid}, function(err, data){
+                                       
+                        post.author = deletePwd(data);
+
+                        UsersCollection.findOne({_id: post.ownerId.oid}, function(err, data){
+                            post.owner = deletePwd(data);
+                            delete post.authorId;
+                            delete post.ownerId;
+                            next(null, post);
+                        })
+                    })
+                }, 
+                function(err, data){
+                    res.send(data);
+                }
+            )
+        })
     })
 
-
-
     app.get('/user/:id/following', function(req, res){
-        var user = _.clone(_.find(DB.users,function(usr){
-            return usr.id == req.params.id;
-        }));
+       
+        UsersCollection.findOne({_id: new ObjectID(req.params.id)}, function(err, user){
+            if(!user){
+                res.status(404).send({message:"not found"})
+                return;
+            }
 
-        if(!user){
-            res.status(404).send({message:"not found"})
-            return;
-        }
-
-        var following = _.filter(DB.users,function(usr){
-            return _.include(user.follow, usr.id);
-        });
-        
-        res.send(deletePwd(following))
+            UsersCollection.find({_id: {$in: user.follow}}).toArray(function(err, data){
+                           
+                res.send(deletePwd(data))
+            })
+            
+        })
     })
 
     app.get('/user/:id/followers', function(req, res){
 
-        var followers = _.clone(_.filter(DB.users,function(user){
-            return user.follow && _.include(user.follow, req.params.id);
-        }));
+        UsersCollection.findOne({_id: new ObjectID(req.params.id)}, function(err, user){
+            if(!user){
+                res.status(404).send({message:"not found"})
+                return;
+            }
 
-        res.send(deletePwd(followers))
+            UsersCollection.find({follow: new ObjectID(req.params.id)}).toArray(function(err,data){
+                res.send(deletePwd(data))
+            })
+        })
+
+        
     })
 
     app.post('/user/:id/follow', function(req, res){
-           
-        var user = _.findWhere(DB.users, {"id": req.currentUser.id});
-        user.follow = user.follow || [];
-        if(!_.include(user.follow, req.params.id)){
-            user.follow.push(req.params.id);
-            DB.save();
-        }
-        res.send("following "+req.params.id)
+         
+         UsersCollection.findOne({_id: new ObjectID(req.params.id)}, function(err, user){
+            if(!user){
+                res.status(404).send({message:"not found"})
+                return;
+            }
+
+            var user = req.currentUser;
+            user.follow = user.follow || [];
+            var follower = _.find(user.follow, function(userId){
+                return userId.toString() == req.params.id;
+            })
+            if (follower) { 
+                res.send("already following " + req.params.id) 
+                return
+            }
+            
+            user.follow.push(new ObjectID(req.params.id));
+
+            UsersCollection.update(
+                {_id: user._id}, 
+                {$set: {
+                    follow: user.follow
+                    }
+                },
+                function(err, data){
+                    res.send("following " + req.params.id) 
+                }
+            )
+        })
     })
 
     app.delete('/user/:id/follow', function(req, res){
-        var user = _.findWhere(DB.users, {"id": req.currentUser.id});
+        var user = req.currentUser;
         user.follow = user.follow || [];
-        user.follow = _.without(user.follow, req.params.id)
-        DB.save();
-        res.send("not following "+req.params.id)
+        user.follow = _.filter(user.follow, function(userId){
+            return userId.toString() != req.params.id;
+        })
+        
+        UsersCollection.update(
+            {_id: user._id}, 
+            {$set: {
+                follow: user.follow
+                }
+            },
+            function(err,data){
+                res.send("not following " + req.params.id)   
+            }
+        )
+        
     })
 
     app.post('/register', function(req, res) {
         
-        var uniqueId = Date.now();
-        console.log(req.body);
-        //проверить свободен ли ник и имейл
         if (!req.body.email) {
             res.status(400).send({message: "Email is required"})
             return;
-        } else if(req.body.email.indexOf("@")==-1){
+        } else if(req.body.email.indexOf("@") == -1){
              res.status(400).send({message: "Invalid Email"})
             return;
         } else if (!req.body.nick || req.body.nick == "") {
@@ -126,37 +215,43 @@ module.exports = function(app){
             return;
         }
 
-        if (_.findWhere(DB.users,{"email":req.body.email})){
-            res.status(400).send({message: "This Email is not available"})
-            return;
-        } else if (_.findWhere(DB.users,{"nick":req.body.nick})){
-            res.status(400).send({message: "This Nick is not available"})
-            return;
-        }
-        var user = {
-            email: req.body.email,
-            nick: req.body.nick,
-            pwd: sha1(req.body.pwd),
-            id: String(++uniqueId)
-        };
+        async.parallel(
+            [
+                function(callback){
+                    UsersCollection.findOne({email: req.body.email}, function(err,data){
+                        callback(err, data)
+                    })
+                },
+                function(callback){
+                    UsersCollection.findOne({nick: req.body.nick}, function(err,data){
+                        callback(err, data)
+                    })
+                }
+            ], 
+            function(err, data){
+                var userWithEmail = data[0];
+                var userWithNick = data[1];
+              
+                
+                if (userWithEmail){
+                    res.status(400).send({message: "This Email is not available"})
+                    return;
+                } else if (userWithNick){
+                    res.status(400).send({message: "This Nick is not available"})
+                    return;
+                } else { 
+                    var user = {
+                            email: req.body.email,
+                            nick: req.body.nick,
+                            pwd: sha1(req.body.pwd)
+                        };
 
-        DB.users.push(user)
-        DB.save();
-        res.send(deletePwd(user))
+                    UsersCollection.insert(user, function(err, data){
+                            res.send(deletePwd(user));
+                    })
+                }
+            }
+        )
     })
 
-
-    function deletePwd(users){
-        if (_.isArray(users)){
-            return _.map(users, function(user){
-                var userCopy = _.clone(user)
-                delete userCopy.pwd;
-                return userCopy;
-            })
-        } else {
-            var userCopy = _.clone(users)
-            delete userCopy.pwd;
-            return userCopy;
-        }
-    }
 }

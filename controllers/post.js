@@ -1,70 +1,112 @@
-module.exports=function(app){
-    
+module.exports = function(app){
+
     app.post('/user/:id/wall', function(req, res){
+        
         if(!req.body.content){
             res.status(400).send({message:'content required'})
             return;
         }
-        var uniqueId = Date.now();
         var post = {
             content: req.body.content,
-            id: String(++uniqueId),
-            authorId: req.currentUser.id,
-            ownerId: req.params.id
+            authorId: {$ref: "users", $id: req.currentUser._id},
+            ownerId: {$ref: "users", $id: new ObjectID(req.params.id)}
         };
-        DB.posts.push(post)
-        DB.save();
-        res.send(post);
+
+        PostsCollection.insert(post, function(err, data){
+            res.send(post);
+        })
     })
 
-    app.get('/post', function(req, res){
-        res.send(DB.posts);
+    app.get('/posts', function(req, res){
+        
+        PostsCollection
+            .find({})
+            .toArray(function(err, posts){
+                async.mapLimit(
+                    posts, 
+                    5, 
+                    function(post, next){
+                        UsersCollection.findOne({_id: post.authorId.oid}, function(err, data){
+                                           
+                            post.author = deletePwd(data);
+
+                            UsersCollection.findOne({_id: post.ownerId.oid}, function(err, data){
+                                post.owner = deletePwd(data);
+                                delete post.authorId;
+                                delete post.ownerId;
+                                next(null, post);
+                            })
+                        })
+                    }, 
+                    function(err, data){
+                        res.send(data);
+                    }
+                )
+        })
     })
 
     app.get('/posts/:id', function(req, res){
-       var post = _.clone(_.findWhere(DB.posts,{"id":req.params.id}));
-        if(!post){
-            res.status(404).send({message:"not found"})
-            return;
-        }
-        res.send(post)
+       PostsCollection.findOne({_id: new ObjectID(req.params.id)}, function(err, post){
+            if(!post){
+                res.status(404).send({message:"not found"})
+                return;
+            }
+            UsersCollection.findOne({_id: post.authorId.oid}, function(err, data){
+                post.author = deletePwd(data);
+
+                UsersCollection.findOne({_id: post.ownerId.oid}, function(err, data){
+                    post.owner = deletePwd(data);
+                    delete post.authorId;
+                    delete post.ownerId;
+                    res.send(post)
+                })
+            })
+            
+        })
     })
 
-    app.put('/posts/:id',function(req,res){
-        var post = _.findWhere(DB.posts,{"id":req.params.id});
-        if(!post){
-            res.status(404).send({message:"not found"})
+    app.put('/posts/:id', function(req,res){
+        PostsCollection.findOne({_id: new ObjectID(req.params.id)}, function(err, post){
+            if(!post){
+                res.status(404).send({message:"not found"})
+                return;
+            }
+            if(req.currentUser._id.toString() != post.authorId.oid.toString()){
+                res.status(405).send({message: "Not Allowed"})
+                return;
+            }
+            if(!req.body.content){
+                res.status(400).send({message:'content required'})
             return;
-        }
-        if(req.currentUser.id != post.authorId){
-            res.status(405).send({message: "Not Allowed"})
-            return;
-        }
-        if(!req.body.content){
-            res.status(400).send({message:'content required'})
-            return;
-        }
-        
-        post.content = req.body.content;
-        DB.save();
-        
-        res.send(post)
+            }
+            
+            PostsCollection.update(
+                {_id: post._id},
+                {$set: {content: req.body.content}},
+                function(err, data){
+                    post.content = req.body.content
+                    res.send(post)    
+                }
+            )
+        })
     })
 
     app.delete('/posts/:id', function(req, res){
-        var post = _.findWhere(DB.posts,{"id":req.params.id});
-        if(!post){
-            res.status(404).send({message:"not found"})
-            return;
-        }
-        if(!(req.currentUser.id == post.authorId || req.currentUser.id == post.ownerId)){
-             res.status(405).send({message: "Not Allowed"})
-            return;
-        }
-        
-        DB.posts.splice(DB.posts.indexOf(post),1);
-        DB.save();
-        
-        res.send("deleted")
+        PostsCollection.findOne({_id: new ObjectID(req.params.id)}, function(err, post){
+            if(!post){
+                res.status(404).send({message:"not found"})
+                return;
+            }
+            if(!(req.currentUser._id.toString() == post.authorId.oid.toString() || req.currentUser._id.toString() == post.ownerId.oid.toString())){
+                res.status(405).send({message: "Not Allowed"})
+                return;
+            }  
+            PostsCollection.remove({_id: new ObjectID(req.params.id)}, function(err, post){
+               res.send("deleted") 
+            })
+            
+        })
+       
     })
+
 }
