@@ -8,7 +8,8 @@ var bodyParser = require('body-parser');
 var fs = require('fs')
 var app = express();
 var MongoClient = require('mongodb').MongoClient
-var url = 'mongodb://localhost:27017/socialNetwork'; // в консоли монго смотреть через: use socialNetwork, затем можно db.users.find({}) и т.п.
+var url = 'mongodb://localhost:27017/socialNetwork'; 
+
 MongoClient.connect(url, function(err, db){
 
     console.log("Connected corretly to server");
@@ -58,7 +59,6 @@ app.use(function (req, res, next) {
         res.status(401).send({message: "invalid user or password"})
     })
 })
-
 
 require('./controllers/user')(app);
 require('./controllers/post')(app);
