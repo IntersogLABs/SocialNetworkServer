@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 GLOBAL._ = require('underscore');
 var app = express();
+var router = express.Router();
 var MongoClient = require('mongodb').MongoClient
 var url = 'mongodb://localhost:27017/socialNetwork';
 MongoClient.connect(url, function(err, db) {
@@ -14,7 +15,7 @@ app.use(express.static('public'))
 
 var auth = require('./auth')
 
-app.use(function(req, res, next) {
+router.use(function(req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
@@ -27,8 +28,8 @@ app.use(function(req, res, next) {
       next();
     }
 });
-app.use(bodyParser.json())
-app.use(function (req, res, next) {
+router.use(bodyParser.json())
+router.use(function (req, res, next) {
     console.log(req.originalUrl)
     if(req.originalUrl =='/register'){
         next(null);
@@ -54,6 +55,7 @@ app.use(function (req, res, next) {
 
 
 })
-require('./controllers/user')(app)
-require('./controllers/post')(app)
-require('./controllers/following')(app)
+require('./controllers/user')(router)
+require('./controllers/post')(router)
+require('./controllers/following')(router)
+app.use('/api',router);
