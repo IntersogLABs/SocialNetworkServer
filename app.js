@@ -10,6 +10,8 @@ MongoClient.connect(url, function(err, db) {
     app.listen(80)
 });
 
+app.use(express.static('public'))
+
 var auth = require('./auth')
 
 app.use(function(req, res, next) {
