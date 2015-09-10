@@ -14,6 +14,14 @@ define([
     // }
 
     // Place your application-specific model features here
+    wrapJson: function(data) {
+      var jsonData = {};
+      for (var field in data) {
+	jsonData[data[field].name] = data[field].value;
+      }
+      this.attributes = jsonData;
+      return JSON.stringify(jsonData);
+    }
   });
 
   return Model;

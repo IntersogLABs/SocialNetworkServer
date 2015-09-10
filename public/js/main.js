@@ -24,19 +24,20 @@ requirejs.config({
     handlebars: {
       exports: 'Handlebars'
     }
-  }
+  },
   // For easier development, disable browser caching
   // Of course, this should be removed in a production environment
   //, urlArgs: 'bust=' +  (new Date()).getTime()
+  waitSeconds: 60
 });
 
 // Bootstrap the application
 require(['application', 'routes'], function(Application, routes) {
 
   window.config = {
-      user: "vpotravnyy",
-      pwd: "1234",
-      apiUrl: "http://api.intersoglabs.com/"
+      user: "",
+      pwd: "",
+      apiUrl: "/api/"
   }
 
   $.ajaxSetup({

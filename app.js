@@ -8,7 +8,7 @@ var url = 'mongodb://localhost:27017/socialNetwork';
 MongoClient.connect(url, function(err, db) {
     console.log(err ? err : "Connected correctly to server");
     GLOBAL.DB  =  db;
-    app.listen(80)
+    app.listen(100)
 });
 
 app.use(express.static('public'))
@@ -31,7 +31,7 @@ router.use(function(req, res, next) {
 router.use(bodyParser.json())
 router.use(function (req, res, next) {
     console.log(req.originalUrl)
-    if(req.originalUrl =='/register'){
+    if(req.originalUrl =='/api/register'){
         next(null);
         return;
     }
