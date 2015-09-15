@@ -1,0 +1,21 @@
+<h1>Wall {{nick}}</h1>
+<div class="wall">
+</div>
+<div class="empty">
+There's no posts
+</div>
+<div class="loading">
+loading...
+</div>
+<div class="row">
+  {{#if following}}
+    <button class="btn btn-default">
+      Unsubscribe
+    </button>
+  {{else}}
+    <button class="btn btn-default">
+      Subscribe
+    </button>
+  {{/if}}
+  </button>
+</div>
