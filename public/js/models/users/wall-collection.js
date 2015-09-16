@@ -1,12 +1,20 @@
 define([
   'models/base/collection',
-  '../posts/post-model'
-], function(Collection, Post) {
+  './wall-post'
+], function(Collection, WallPost) {
   'use strict';
 
   var Wall = Collection.extend({
-    url: function() { return config.apiUrl + 'user/' + this.models[0].id + '/wall'; },
-    model: Post
+    initialize: function(args){
+      var superResult = Collection.prototype.initialize.apply(this, arguments);
+      this.id = args.id;
+      return superResult;
+    },
+    url: function() { return config.apiUrl + 'user/' + this.id + '/wall'; },
+    model: WallPost,
+    new: function() {
+      return new WallPost(null, {wallId: this.id});
+    }
   });
 
   return Wall;

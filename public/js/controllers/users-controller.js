@@ -3,8 +3,9 @@ define([
   'models/users/users-collection',
   'views/users/users-collection-view',
   'views/users/user-wall-view',
-  'models/users/wall-collection'
-], function(Controller, UserCollection, UsersCollectionView, UserWallView, Wall) {
+  'models/users/wall-collection',
+  'views/users/wall-add-post-view'
+], function(Controller, UserCollection, UsersCollectionView, UserWallView, Wall, WallAddPostView) {
   'use strict';
 
   var UsersController = Controller.extend({
@@ -39,7 +40,8 @@ define([
       this.view = new UserWallView({
 	collection: this.model,
 	region: 'content'
-      });
+      })
+	.subview('add-post', new WallAddPostView({model:this.model}))
     }
   });
 

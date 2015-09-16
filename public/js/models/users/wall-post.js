@@ -1,11 +1,16 @@
 define([
-  'models/base/model'
-], function(Model) {
+  'models/posts/post-model'
+], function(Post) {
   'use strict';
 
-  var Post = Model.extend({
-    url: function() { return config.apiUrl + 'user/' + this.models[0].id + '/wall'; }
+  var WallPost = Post.extend({
+    initialize: function(args, opts){
+      var superResult = Post.prototype.initialize.apply(this, arguments);
+      this.wallId = opts.wallId;
+      return superResult;
+    },
+    url: function() { return config.apiUrl + 'user/' + this.wallId + '/wall'; }
   });
 
-  return Post;
+  return WallPost;
 });
