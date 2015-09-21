@@ -8,6 +8,8 @@ define(function() {
     match('register', 'register#index');
     match('users', 'users#index');
     match('users/:id', 'users#show');
+    match('follow/:id', 'users#follow');
+    match('unfollow/:id', 'users#unfollow');
     // match('/me', 'me#index');
   };
 });
