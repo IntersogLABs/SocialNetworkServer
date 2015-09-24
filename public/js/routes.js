@@ -6,6 +6,7 @@ define(function() {
   return function(match) {
     match('', 'hello#show');
     match('register', 'register#index');
+    match('feed', 'feed#index');
     match('users', 'users#index');
     match('users/:id', 'users#show');
     match('follow/:id', 'users#follow');
