@@ -12,16 +12,21 @@ define([
     urlRoot: function() { return config.apiUrl + 'user/' + this.get('wallId') + '/'; },
     url: function() { return this.urlRoot() + 'follow'; },
     isFollowing: function() {
-      this
+      return this
 	.fetch({url: this.urlRoot() + 'folowers'})
 	.then(
-	  (function(result){
+	  function(result){
 	    this.set({'following': _.some(result, function(item) {
 	      return item.fan._id == window.config.userid;
 	    })})
-	    console.log(this);
-	  }).bind(this)
+	  }.bind(this)
 	)
+    },
+    drop: function() {
+      $.ajax({
+	url: this.url(),
+	type: 'DELETE'
+      });
     }
   });
 

@@ -15,7 +15,6 @@ define([
     beforeAction: function(){
       var superResult = Controller.prototype.beforeAction.apply(this, arguments)
 
-
       this.reuse('userlist', {
         compose: function() {
           this.collection = new UserCollection();
@@ -42,8 +41,6 @@ define([
     index: function() {
     },
     show: function(params) {
-      var that = this;
-
       this.model = new Wall(params);
       this.model.fetch({id: params.id})
 
@@ -53,22 +50,21 @@ define([
       })
 	.subview('add-post', new WallAddPostView({model:this.model}))
 
-      this.reuse(Math.random().toString(), {
-	compose: function() {
-	  this.model = new Subscribe({wallId: params.id})
-	  this.model.isFollowing();
-	  this.view = new FollowButtonView({model:this.model});
-	}
-      });
+      this.subscribeModel = new Subscribe({wallId: params.id})
+      this.subscribeModel.isFollowing().then(function() {
+	this.subscribeView.render();
+      }.bind(this));
+      this.subscribeView = new FollowButtonView({model:this.subscribeModel});
     },
     follow: function(params) {
-      var subscribeModel = new Subscribe({wallId: params.id})
-      subscribeModel.save();
+      console.log(this);
+      this.model = new Subscribe({wallId: params.id})
+      this.model.save();
       this.redirectTo('users#show', {id: params.id});
     },
     unfollow: function(params) {
-      var subscribeModel = new Subscribe({wallId: params.id})
-      subscribeModel.destroy();
+      this.model = new Subscribe({wallId: params.id})
+      this.model.drop();
       this.redirectTo('users#show', {id: params.id});
     }
   });
