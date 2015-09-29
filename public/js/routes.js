@@ -11,6 +11,7 @@ define(function() {
     match('users/:id', 'users#show');
     match('follow/:id', 'users#follow');
     match('unfollow/:id', 'users#unfollow');
-    // match('/me', 'me#index');
+    match('me', 'users#me');
+    match('editme', 'users#editme');
   };
 });
