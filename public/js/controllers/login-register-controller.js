@@ -34,6 +34,14 @@ define([
             });
         },
 
+        quit: function() {
+            if(!window.config.currUser) window.location.href = "http://localhost/public/index.html"
+
+            localStorage.removeItem('currUser');
+            window.config.currUser = undefined;
+            window.location.href = "http://localhost/public/index.html"
+        },
+
         sendToDB: function() {
 
             var length = 0
@@ -74,6 +82,7 @@ define([
                                     selfView.view.remove()
 
                                 }).then( function(){
+                                    if(!selfView.view) return;
                                     selfView.view = new WelcomeView({
                                         region: 'content'
                                     });

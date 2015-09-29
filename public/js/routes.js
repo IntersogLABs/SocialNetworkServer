@@ -7,8 +7,7 @@ define(function() {
     match('', 'login-register#show');
     match('users', 'users#index');
     match('users/:id', 'users#index');
-    //match('users/:id', 'posts#index');
     match('me', 'me#index');
-    // match('/me', 'me#index');
+    match('quit', 'login-register#quit')
   };
 });
