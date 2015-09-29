@@ -1,0 +1,180 @@
+#container {
+	padding-top: 70px;
+}
+
+.f_colomn {
+    display: inline-block;
+	width: 200px;
+	height: 245px;
+
+}
+
+.f_colomn img {
+	width: 198px;
+    border: solid 1px black;
+}
+
+.s_colomn {
+    display: inline-block;
+    width: calc(100% - 205px);
+    height: 400px;
+    position: inherit;
+    margin: 0px 40px;
+}
+
+ .nick {
+    font-size: xx-large;
+    color: #548AB9;
+    margin: 15px 0px;
+}
+
+ .profile-info {
+    margin: 25px 0px;
+    font-size: larger;
+}
+
+ .button-follow {
+     background-color: rgb(84, 138, 185);
+     text-align: center;
+     color: beige;
+     width: 130px;
+     height: 38px;
+     font-size: initial;
+     display: table-cell;
+     vertical-align: middle;
+     left: 25%;
+     position: relative;
+     top: 15px;
+ }
+
+.user-main-page {
+    width: 500px;
+    height: 100%;
+    position: absolute;
+}
+
+.button-post {
+    width: 21%;
+    background-color: rgb(84, 138, 185);
+    text-align: center;
+    color: beige;
+    margin-left: auto;
+    font-size: initial;
+}
+
+.button-edit-post {
+    width: 21%;
+    background-color: rgb(84, 138, 185);
+    text-align: center;
+    color: beige;
+    margin-left: auto;
+    font-size: initial;
+}
+
+.write-post textarea {
+    width: 100%;
+}
+
+.labeled {
+    display: inline-block;
+    text-align: left;
+    width: 100px;
+}
+
+.label {
+    display: inline-block;
+    width: 50px;
+    text-align: left;
+    color: #948C8C;
+}
+
+.author {
+    color: #3D6E98;
+    width: 77%;
+    display: inline-block;
+}
+
+.button-post-wall {
+    border: solid 1px;
+    display: none;
+    text-align: center;
+    color: #548AB9;
+}
+
+.button-post-delete {
+    width: 8%;
+}
+
+.button-post-edit {
+    width: 12%;
+}
+
+.available-post:hover .button-post-wall {
+    display: inline-block;
+}
+
+
+.displayed {
+    display: block;
+}
+
+.none-displayed {
+    display: none;
+}
+
+.block {
+    text-align: center;
+}
+
+.block input {
+    margin-bottom: 5px;
+}
+
+.login-register-form {
+    border: solid 1px #548AB9;
+    border-radius: 5px;
+    padding: 20px;
+    width: 360px;
+}
+
+.title-form {
+    width: 100px;
+    display: inline-block;
+    padding: 7px;
+}
+
+.pre-title-form {
+    text-align: center;
+    margin: 10px auto;
+}
+
+.checked-title {
+    background-color: rgb(84, 138, 185);
+    color: beige;
+    border-radius: 5px;
+}
+
+.welcome {
+    color: #586EB1;
+    font-size: -webkit-xxx-large;
+}
+
+.available-post {
+    border-bottom: solid 1px #A2A4A7;
+    padding: 15px 0px;
+}
+
+.no-post {
+    padding: 15px 0px;
+    text-align: center;
+}
+
+
+.follow {
+    margin: 30px auto auto;
+    padding: 10px;
+}
+
+.content textarea {
+    width: 100%
+}

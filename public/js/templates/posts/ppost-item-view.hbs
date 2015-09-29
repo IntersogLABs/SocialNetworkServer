@@ -1,0 +1,14 @@
+{{#if this}}
+    <div class="post available-post">
+        <div>
+            <div class="author"><a href="#/users/{{author._id}}">{{author.nick}}</a></div>
+            <div class="button-post-delete button-post-wall">X</div>
+            <div class="button-post-edit button-post-wall">Edit</div>
+        </div>
+        <div class="content">{{content}}</div>
+    </div>
+{{else}}
+    <div class="post no-post">
+        <div>Nobody write yet</div>
+    </div>
+{{/if}}

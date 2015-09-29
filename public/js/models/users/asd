@@ -1,0 +1,22 @@
+define([
+    'models/base/collection',
+    './user-model'
+], function(Collection, UserModel) {
+    'use strict';
+
+    var User = Collection.extend({
+
+        model: UserModel,
+
+        initialize: function(options){
+            super(())
+            this.url = config.apiUrl + "user" + options.userId + "/posts"
+        }
+    });
+
+    return User;
+});
+
+
+
+var col = new PoCol({userId: 42})

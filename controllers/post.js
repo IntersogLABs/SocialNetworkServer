@@ -1,4 +1,16 @@
+
+var ObjectId = require('mongodb').ObjectID
 module.exports=function(app){
+
+    app.get('/post', function(req, res) {
+        DB.collection('posts').find({}).toArray(function (err, data) {
+            if(!data || data == []) {
+                res.status(400).send("There is no posts")
+            }
+            res.send(data);
+        })
+    })
+
     app.post('/user/:id/wall',function(req,res){
         if(!req.body.content){
             res.status(400).send({message:'content required'})
@@ -6,66 +18,75 @@ module.exports=function(app){
         }
         var post = {
             content:req.body.content,
-            id:Date.now(),
-            authorId:req.currentUser.id,
-            ownerId:req.params.id
+            authorId:{$ref:"users",_id:req.currentUser._id},
+            ownerId:{$ref:"users",_id:req.params.id}
         };
-        DB.posts.push(post)
-        DB.save();
-        res.send(post);
+        DB.collection('posts').insert(post,function(err,data){
+            res.send(data);
+        })
     })
 
-    app.get('/post', function(req, res) {
-        if(!DB.posts || DB.posts == []) {
-            res.status(400).send("There is no posts")
-        }
-
-        res.send(DB.posts);
+    app.get('/user/:id/wall',function(req,res){
+        var posts = [];
+        DB.collection('posts').find({"ownerId._id": req.params.id}, function (err, post) {
+            posts.push(post)
+        })
+        res.send(posts)
     })
 
     app.get('/post/:id', function(req, res) {
-        var post = _.find(DB.posts,function(post){
-            return post.id ==req.params.id;
-        });
-        if(!post){
-            res.status(404).send({message:"not found"})
-            return;
-        }
-        res.send(post)
+        DB.collection('posts').findOne({_id: new ObjectId(req.params.id)},
+            function (err, post) {
+                if (!post) {
+                    res.status(404).send({message: "not found"})
+                    return;
+                }
+                res.send(post);
+            })
     })
 
-    app.put('/posts/:id', function(req, res) {
-        var post = _.where( DB.posts,{id:req.params.id});
+    app.put('/post/:id', function(req, res) {                             //не сохран€ютс€ изменени€
+        DB.collection('posts').findOne({_id: new ObjectId(req.params.id)},
+            function (err, post) {
+                if (!post) {
+                    res.status(404).send({message: "not found"})
+                    return;
+                }
 
-        if(!post) {
-            res.status(404).send({message:"not found"})
-            return;
-        }
+                if(post.authorId._id.toString() == req.currentUser._id.toString()) {
+                    post.content = req.body.content;
 
-        if(req.currentUser.id == post.authorId) {
-            post.content = req.body.content
-            res.send(DB.posts[req.params.id])
-            return;
-        }
-        res.status(400).send('You can\'t edit this post')
+                    DB.collection('posts').update({_id: new ObjectId(req.params.id)}, {$set:{"content": post.content}}
+                        , function() {
+                        res.send(post);
+                    })
+                    return
+                } else {
+                    res.status(404).send({message: "You can't modify post"})
+                }
+            })
     })
 
     app.delete('/post/:id', function(req, res) {
-        var id = _.where( DB.posts, {id:req.params.id});
 
-        if(!id) {
-            res.send("There is no such post")
-            return;
-        }
+        DB.collection('posts').findOne({_id: new ObjectId(req.params.id)},
+            function (err, post) {
+                if (!post) {
+                    res.status(404).send({message: "not found"})
+                    return;
+                }
 
-        if(!(req.currentUser.id == DB.posts[id].authorId || req.currentUser.id == DB.posts[id].ownerId)) {
-            res.status(400).send('You can\'t delete this post')
-            return;
-        }
+                if(post.ownerId._id.toString() != req.currentUser._id && post.authorId._id.toString() != req.currentUser._id) {
+                    res.status(403).send({message: "You can't delete post"})
+                    return
+                }
+            })
 
-        DB.posts.splice(id, 1);
-        DB.save();
-        res.send(DB.posts)
+
+         DB.collection('posts').remove({_id: new ObjectId(req.params.id)}, function(err, data) {
+             res.send(data)
+         })
+
     })
 
 }

@@ -1,0 +1,22 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Social network using Chaplin.js\r Don't forget to make `bower install` firstly",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vizhukova/SocialChaplin-1.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vizhukova/SocialChaplin-1/issues"
+  },
+  "homepage": "https://github.com/vizhukova/SocialChaplin-1#readme",
+  "dependencies": {
+    "express": "^4.13.3"
+  }
+}

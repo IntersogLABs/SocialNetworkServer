@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Social</title>
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+  <link rel="stylesheet" type="text/css" href="css/main.css">
+  <script src="bower_components/requirejs/require.js" data-main="js/main"></script>
+</head>
+<body></body>
+</html>
+
+
+
+<script id="user-wall" type="text/x-handlebars-template">
+    <div class="user-main-page">
+        <div class="nick">{{nick}}</div>
+        <div class="f_colomn">
+            <img src="images/images.png"/>
+            <div class="profile-info">
+                <div class="label">email:</div>
+                <div class="labeled">{{email}}</div>
+                {{#if isCurrUser}}
+                    {{#if isFollowed}}
+                    <div class="button-follow unfollow">Unfollow</div>
+                    {{else}}
+                    <div class="button-follow follow">Follow</div>
+                    {{/if}}
+                {{/if}}
+                <div class="follow">
+                    <div class="follows"><details><summary>Follows</summary>
+                        {{#each follows}}
+                        <li><a href="#/users/{{_id}}">{{nick}}</a></li>
+                        {{/each}}
+                    </details></div>
+                    <div class="followers"><details><summary>Followers</summary>
+                        {{#each followers}}
+                        <li><a href="#/users/{{_id}}">{{nick}}</a></li>
+                        {{/each}}
+                    </details></div>
+                </div>
+            </div>
+        </div>
+        <div class="s_colomn" id="posts">
+
+        </div>
+    </div>
+</script>
+
+<!--
+<script id="posts" type="text/x-handlebars-template">
+    <div class="write-post">
+            <textarea></textarea>
+            <div class = "button-post">Post</div>
+            </div>
+            {{#if posts.length}}
+    {{#each posts}}
+    <div class="post available-post">
+            <div>
+            <div class="author"><a href="#/users/{{author._id}}">{{author.nick}}</a></div>
+    <div class="button-post-delete">X</div>
+            </div>
+            <div>{{content}}</div>
+    </div>
+    {{/each}}
+    {{else}}
+    <div class="post no-post">
+            <div>Nobody write yet</div>
+    </div>
+    {{/if}}
+</script>
+-->
