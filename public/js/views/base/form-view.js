@@ -24,6 +24,7 @@ define([
 	model.set(data);
 	model.save();
       }
+      this.render();
     },
   });
 
