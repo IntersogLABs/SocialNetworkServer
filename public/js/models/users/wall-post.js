@@ -7,6 +7,7 @@ define([
     initialize: function(args, opts){
       var superResult = Post.prototype.initialize.apply(this, arguments);
       this.wallId = opts.wallId;
+      this.set('hideOwner', true);
       return superResult;
     },
     url: function() { return config.apiUrl + 'user/' + this.wallId + '/wall'; }

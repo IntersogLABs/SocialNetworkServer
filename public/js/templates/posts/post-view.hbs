@@ -3,6 +3,6 @@
     {{content}}
   </p>
   <small class="post-title">
-    {{author.nick}} writes
+    {{author.nick}} writes{{#if hideOwner}}{{else}} on {{owner.nick}}'s wall{{/if}}
   </small>
 </blockquote>
