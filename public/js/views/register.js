@@ -4,6 +4,7 @@ define(['views/base/view', 'text!templates/register.hbs'], function(View, templa
   var RegisterView = View.extend({
     autoRender: true,
     container: 'body',
+    containerMethod: 'html',
     template: template
   });
 

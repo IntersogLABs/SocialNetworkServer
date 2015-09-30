@@ -3,6 +3,7 @@ define(['views/base/view', 'text!templates/site.hbs'], function(View, template) 
 
   var SiteView = View.extend({
     container: 'body',
+    containerMethod: 'html',
     id: 'site-container',
     regions: {
       sidebar: '#sidebar',

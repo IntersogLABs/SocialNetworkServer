@@ -35,15 +35,14 @@ requirejs.config({
 require(['application', 'routes'], function(Application, routes) {
 
   window.config = {
-      user: "",
-      pwd: "",
-      apiUrl: "/api/"
+      apiUrl: "/api/",
+      loginCounter: 0
   }
 
   $.ajaxSetup({
       contentType: 'application/json',
       beforeSend: function(xhr) {
-          xhr.setRequestHeader('Authorization', config.user+":"+config.pwd);
+          xhr.setRequestHeader('Authorization', localStorage.getItem('user')+":"+localStorage.getItem('pwd'));
       }
   })
 

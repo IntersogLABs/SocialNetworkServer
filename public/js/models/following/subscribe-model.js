@@ -17,7 +17,7 @@ define([
 	.then(
 	  function(result){
 	    this.set({'following': _.some(result, function(item) {
-	      return item.fan._id == window.config.userid;
+	      return item.fan._id == localStorage.getItem('userid');
 	    })})
 	  }.bind(this)
 	)

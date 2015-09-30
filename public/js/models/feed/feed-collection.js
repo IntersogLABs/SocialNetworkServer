@@ -6,7 +6,7 @@ define([
   'use strict';
 
   var Feed = Collection.extend({
-    url: function() { return config.apiUrl + 'user/' + window.config.userid + '/following'; },
+    url: function() { return config.apiUrl + 'user/' + localStorage.getItem('userid') + '/following'; },
     model: Post,
     allPosts: function() {
       var collection = this;

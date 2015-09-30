@@ -13,5 +13,6 @@ define(function() {
     match('unfollow/:id', 'users#unfollow');
     match('me', 'users#me');
     match('editme', 'users#editme');
+    match('logout', 'register#logout');
   };
 });

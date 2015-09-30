@@ -23,11 +23,11 @@ define([
           this.collection = new UserCollection();
           this.collection.fetch().then(function(data){
             console.log(data)
-	    window.config.userid = _.find(data, function(item) {
-	      return item.nick === window.config.user;
+	    var me = _.find(data, function(item) {
+	      return item.nick === localStorage.getItem('user');
 	    });
-	    if (window.config.userid) {
-	      window.config.userid = window.config.userid._id;
+	    if (me) {
+	      localStorage.setItem('userid', me._id);
 	    }
           })
           this.view = new UsersCollectionView({

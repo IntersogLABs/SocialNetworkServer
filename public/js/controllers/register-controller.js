@@ -13,14 +13,21 @@ define([
 	.delegate('click', '.register-submit', (function(e) {
 	  var $form = $(e.target).closest('form');
 	  this.model.on('synced', (function(){
-	    config.user = this.model.attributes.nick;
-	    config.pwd = this.model.attributes.pwd;
+	    localStorage.setItem('user', this.model.attributes.nick);
+	    localStorage.getItem('pwd', this.model.attributes.pwd);
 	    Chaplin.utils.redirectTo({url: 'users'});
 	    $form.hide();
 	  }).bind(this));
 	  this.model.post($form.serializeArray());
 	  e.preventDefault();
 	}).bind(this));
+    },
+
+    logout: function() {
+      localStorage.removeItem('user');
+      localStorage.removeItem('pwd');
+      localStorage.removeItem('userid');
+      this.redirectTo('hello#show');
     }
   });
 
