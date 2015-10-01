@@ -1,7 +1,7 @@
-define(['views/base/view', 'text!templates/register.hbs'], function(View, template) {
+define(['views/base/form-view', 'text!templates/register.hbs'], function(FormView, template) {
   'use strict';
 
-  var RegisterView = View.extend({
+  var RegisterView = FormView.extend({
     autoRender: true,
     container: 'body',
     containerMethod: 'html',
