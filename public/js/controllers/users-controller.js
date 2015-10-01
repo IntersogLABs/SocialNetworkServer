@@ -18,17 +18,26 @@ define([
     beforeAction: function(){
       var superResult = Controller.prototype.beforeAction.apply(this, arguments)
 
+      var controller = this;
+
       this.reuse('userlist', {
         compose: function() {
           this.collection = new UserCollection();
-          this.collection.fetch().then(function(data){
-            console.log(data)
-	    var me = _.find(data, function(item) {
-	      return item.nick === localStorage.getItem('user');
-	    });
-	    if (me) {
-	      localStorage.setItem('userid', me._id);
-	    }
+          var fetch = this.collection.fetch();
+          fetch.then(function(data){
+            localStorage.removeItem('message');
+            var me = _.find(data, function(item) {
+              return item.nick === localStorage.getItem('user');
+            });
+            if (me) {
+              localStorage.setItem('userid', me._id);
+            }
+          })
+          fetch.fail(function(xhr) {
+            localStorage.setItem('message', xhr.responseJSON.message);
+            if (xhr.status === 401) {
+              controller.redirectTo('register#logout');
+            }
           })
           this.view = new UsersCollectionView({
             collection: this.collection,

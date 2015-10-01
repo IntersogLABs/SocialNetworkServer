@@ -1,4 +1,10 @@
-define(['chaplin', 'views/site-view', 'views/login'], function(Chaplin, SiteView, LoginView) {
+define([
+  'chaplin',
+  'views/site-view',
+  'views/login',
+  'models/base/model',
+  'views/base/error-message-view'
+], function(Chaplin, SiteView, LoginView, Model, ErrorMessageView) {
   'use strict';
 
   var Controller = Chaplin.Controller.extend({
@@ -8,6 +14,16 @@ define(['chaplin', 'views/site-view', 'views/login'], function(Chaplin, SiteView
 	if (arguments[1].path == 'register') return;
 
 	this.view = new LoginView();
+
+	var message = localStorage.getItem('message');
+	if (message) {
+	  this.model = new Model();
+	  this.model.set('message', message);
+	  this.view.subview('errorMessage', new ErrorMessageView({
+	    model: this.model
+	  }));
+	}
+
 	this.view.delegate('click', '.login-submit', function(e){
 	  var $form = $(e.target).closest('form');
 	  localStorage.setItem('user', $('[name="login"]').val());
