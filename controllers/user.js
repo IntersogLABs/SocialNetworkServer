@@ -3,7 +3,10 @@ var async = require('async')
 var auth = require('../auth')
 module.exports = function (app) {
     app.get('/me', function (req, res) {
-        res.send(req.currentUser);
+	var me = _.clone(req.currentUser);
+	
+	delete me.pwd;
+	res.send(me);
     })
     app.get('/user', function (req, res) {
         DB.collection('users').find({}).toArray(function (err, data) {
