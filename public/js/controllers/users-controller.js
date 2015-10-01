@@ -93,8 +93,10 @@ define([
 	this.view.render();
       }.bind(this))
 
-      this.model.on('sync', function() {
-	if (arguments[2].validate) {
+      this.model.on('sync', function(model, res, xhr) {
+	if (xhr.validate) {
+	  localStorage.setItem('user', model.get('nick'));
+	  localStorage.setItem('pwd', model.get('pwd'));
 	  this.redirectTo('users#me');
 	}
       }.bind(this));

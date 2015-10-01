@@ -1,6 +1,7 @@
 define([
-  'views/base/view'
-], function(View) {
+  'views/base/view',
+  'views/base/error-message-view'
+], function(View, ErrorMessageView) {
   'use strict';
 
   var FormView = View.extend({
@@ -19,12 +20,20 @@ define([
 	model = collection.new();
 	model.set(data);
 	collection.push(model);
-	model.save()
       } else {
 	model.set(data);
-	model.save();
       }
-      this.render();
+      model.save().fail(function(res){
+	model.set('message', res.responseJSON.message);
+	this.subview('errorMessage', new ErrorMessageView({
+	  model: model
+	}));
+      }.bind(this)).always(function(){
+	this.render()
+	_.each(this.subviews, function(view) {
+	  view.render();
+	});
+      }.bind(this));
     },
   });
 
